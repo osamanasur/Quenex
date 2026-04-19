@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}Create Event - Quenex{% endblock %}
+
+{% block content %}
+<div class="container mt-5 pt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow border-0">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-plus-circle me-2"></i>Create New Event</h4>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" enctype="multipart/form-data">
+                        <!-- Basic Information -->
+                        <h5 class="mb-3"><i class="fas fa-info-circle text-primary me-2"></i>Basic Information</h5>
+                        <div class="row g-3 mb-4">
+                            <div class="col-12">
+                                <label class="form-label">Event Title *</label>
+                                <input type="text" class="form-control" name="title" required placeholder="e.g., Arua City Carnival 2025">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Description *</label>
+                                <textarea class="form-control" name="description" rows="5" required placeholder="Describe your event in detail..."></textarea>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Category *</label>
+                                <select class="form-select" name="category" id="categorySelect" required onchange="updateFeeInfo()">
+                                    <option value="">Select category</option>
+                                    {% for key, cat in categories.items() %}
+                                    <option value="{{ key }}" data-price="{{ category_prices[key] }}">
+                                        {{ cat.name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Venue *</label>
+                                <input type="text" class="form-control" name="venue" required placeholder="e.g., Arua City Hall, Rhino Camp Road">
+                            </div>
+                        </div>
+
+                        <!-- Date and Time -->
+                        <h5 class="mb-3"><i class="fas fa-calendar-alt text-primary me-2"></i>Date & Time</h5>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label">Event Date *</label>
+                                <input type="date" class="form-control" name="event_date" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Event Time *</label>
+                                <input type="time" class="form-control" name="event_time" required>
+                            </div>
+                        </div>
+
+                        <!-- Capacity -->
+                        <h5 class="mb-3"><i class="fas fa-users text-primary me-2"></i>Capacity</h5>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label">Maximum Capacity *</label>
+                                <input type="number" class="form-control" name="capacity" required min="1" placeholder="Number of attendees">
+                            </div>
+                        </div>
+
+                        <!-- Event Image -->
+                        <h5 class="mb-3"><i class="fas fa-image text-primary me-2"></i>Event Banner</h5>
+                        <div class="row g-3 mb-4">
+                            <div class="col-12">
+                                <label class="form-label">Event Image</label>
+                                <input type="file" class="form-control" name="event_image" accept="image/*">
+                                <small class="text-muted">Recommended size: 1200x600px. Max 16MB.</small>
+                            </div>
+                        </div>
+
+                        <!-- Pricing Information -->
+                        <div class="alert alert-info" id="feeAlert">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Pricing Information:</strong>
+                            <span id="feeInfo">Select a category to see posting fee</span>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary-custom btn-lg">
+                                <i class="fas fa-calendar-plus me-2"></i>Create Event
+                            </button>
+                            <a href="{{ url_for('organizer_dashboard') }}" class="btn btn-secondary">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function updateFeeInfo() {
+    const select = document.getElementById('categorySelect');
+    const selectedOption = select.options[select.selectedIndex];
+    const price = selectedOption.getAttribute('data-price');
+    const feeInfo = document.getElementById('feeInfo');
+    const feeAlert = document.getElementById('feeAlert');
+    
+    if (price === '0') {
+        feeInfo.innerHTML = '<i class="fas fa-check-circle text-success"></i> Free category - No posting fee!';
+        feeAlert.className = 'alert alert-success';
+    } else if (price) {
+        feeInfo.innerHTML = '<i class="fas fa-money-bill-wave text-warning"></i> Posting fee: UGX ' + parseInt(price).toLocaleString();
+        feeAlert.className = 'alert alert-warning';
+    } else {
+        feeInfo.innerHTML = 'Select a category to see posting fee';
+        feeAlert.className = 'alert alert-info';
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Tickets - {{ event.title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5 pt-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="display-5 fw-bold">Manage Tickets</h1>
+                    <p class="lead">Set pricing for {{ event.title }}</p>
+                </div>
+                <a href="{{ url_for('organizer_my_events') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to My Events
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-8">
+            <div class="card shadow border-0">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-ticket-alt me-2"></i>Ticket Types & Pricing</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Ticket Type</th>
+                                        <th>Current Price</th>
+                                        <th>Total Qty</th>
+                                        <th>Sold</th>
+                                        <th>Available</th>
+                                        <th>New Price (UGX)</th>
+                                        <th>Quantity</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for ticket in ticket_types %}
+                                    {% set sold_count = namespace(value=0) %}
+                                    {% for booking in event.bookings %}
+                                        {% if booking.ticket_type == ticket.name and booking.status == 'confirmed' %}
+                                            {% set sold_count.value = sold_count.value + booking.quantity %}
+                                        {% endif %}
+                                    {% endfor %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ ticket.name }}</strong>
+                                            <input type="hidden" name="ticket_id" value="{{ ticket.id }}">
+                                        </td
+                                        <td>{{ format_currency(ticket.price) }}</td
+                                        <td>{{ ticket.quantity_available }}</td
+                                        <td><span class="badge bg-success">{{ sold_count.value }}</span></td
+                                        <td><span class="badge bg-info">{{ ticket.quantity_available - sold_count.value }}</span></td
+                                        <td>
+                                            <input type="number" class="form-control form-control-sm" name="price" 
+                                                   value="{{ ticket.price }}" step="1000" min="0" style="width: 120px;">
+                                        </td
+                                        <td>
+                                            <input type="number" class="form-control form-control-sm" name="quantity" 
+                                                   value="{{ ticket.quantity_available }}" min="{{ sold_count.value }}" style="width: 100px;">
+                                            <small class="text-muted">Min: {{ sold_count.value }}</small>
+                                        </td
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="alert alert-info mt-3">
+                            <i class="fas fa-lightbulb me-2"></i>
+                            <strong>Pricing Tips:</strong>
+                            <ul class="mb-0 mt-2">
+                                <li><strong>Ordinary:</strong> General admission (UGX 10,000 - 50,000 recommended)</li>
+                                <li><strong>VIP:</strong> Better seating/access (UGX 50,000 - 150,000 recommended)</li>
+                                <li><strong>VVIP:</strong> Premium experience (UGX 150,000 - 500,000 recommended)</li>
+                                <li><strong>Tables:</strong> Group seating (UGX 500,000 - 2,000,000 recommended)</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary-custom">
+                                <i class="fas fa-save me-2"></i>Update Ticket Pricing
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow border-0">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Quick Stats</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="fw-bold">Total Tickets Available:</label>
+                        <h3>{{ ticket_types|sum(attribute='quantity_available') }}</h3>
+                    </div>
+                    <div class="mb-3">
+                        <label class="fw-bold">Total Tickets Sold:</label>
+                        <h3 class="text-success">
+                            {% set total_sold = namespace(value=0) %}
+                            {% for booking in event.bookings %}
+                                {% if booking.status == 'confirmed' %}
+                                    {% set total_sold.value = total_sold.value + booking.quantity %}
+                                {% endif %}
+                            {% endfor %}
+                            {{ total_sold.value }}
+                        </h3>
+                    </div>
+                    <div class="mb-3">
+                        <label class="fw-bold">Remaining Capacity:</label>
+                        <h3 class="text-warning">{{ event.capacity - total_sold.value }}</h3>
+                    </div>
+                    <div class="progress mb-3" style="height: 25px;">
+                        <div class="progress-bar bg-success" style="width: {{ (total_sold.value / event.capacity * 100) if event.capacity > 0 else 0 }}%">
+                            {{ "%.1f"|format((total_sold.value / event.capacity * 100) if event.capacity > 0 else 0) }}% Sold
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow border-0 mt-3">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-money-bill-wave me-2"></i>Revenue Summary</h5>
+                </div>
+                <div class="card-body">
+                    {% set revenue = namespace(value=0) %}
+                    {% for booking in event.bookings %}
+                        {% if booking.status == 'confirmed' and booking.payment and booking.payment.status == 'completed' %}
+                            {% set revenue.value = revenue.value + booking.total_amount %}
+                        {% endif %}
+                    {% endfor %}
+                    <h2 class="text-success">{{ format_currency(revenue.value) }}</h2>
+                    <hr>
+                    <p class="text-muted mb-0">Average Ticket Price: {{ format_currency(revenue.value / total_sold.value) if total_sold.value > 0 else format_currency(0) }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

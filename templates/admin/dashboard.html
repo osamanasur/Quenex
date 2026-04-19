@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - Quenex{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-5 pt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="display-5 fw-bold mb-4">
+                <i class="fas fa-shield-alt text-primary me-2"></i>Admin Dashboard
+            </h1>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4 g-4">
+        <div class="col-md-3">
+            <div class="stat-card text-center p-3">
+                <i class="fas fa-users fa-2x mb-2"></i>
+                <h2 class="mb-0">{{ total_users }}</h2>
+                <p class="mb-0">Total Users</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card text-center p-3">
+                <i class="fas fa-calendar-alt fa-2x mb-2"></i>
+                <h2 class="mb-0">{{ total_events }}</h2>
+                <p class="mb-0">Total Events</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card text-center p-3">
+                <i class="fas fa-clock fa-2x mb-2"></i>
+                <h2 class="mb-0">{{ pending_events|length }}</h2>
+                <p class="mb-0">Pending Approval</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card text-center p-3">
+                <i class="fas fa-money-bill-wave fa-2x mb-2"></i>
+                <h2 class="mb-0">{{ format_currency(total_revenue) }}</h2>
+                <p class="mb-0">Total Revenue</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow border-0">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <a href="{{ url_for('admin_events') }}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-calendar-alt me-2"></i>Manage Events
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ url_for('admin_users') }}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-users me-2"></i>Manage Users
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ url_for('admin_analytics') }}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-chart-line me-2"></i>View Analytics
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ url_for('admin_audit_logs') }}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-history me-2"></i>Audit Logs
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending Events for Approval -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow border-0">
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Events Pending Approval 
+                        {% if pending_events %}
+                            <span class="badge bg-danger ms-2">{{ pending_events|length }}</span>
+                        {% endif %}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if pending_events %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Event</th>
+                                        <th>Organizer</th>
+                                        <th>Category</th>
+                                        <th>Date</th>
+                                        <th>Posting Fee</th>
+                                        <th>Created</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for event in pending_events %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ event.title }}</strong><br>
+                                            <small class="text-muted">{{ event.venue }}</small>
+                                        </td>
+                                        <td>{{ event.organizer.username }}</td>
+                                        <td><span class="badge bg-primary">{{ categories[event.category].name }}</span></td>
+                                        <td>{{ event.date.strftime('%Y-%m-%d') }}</td>
+                                        <td>
+                                            {% if event.event_fee > 0 %}
+                                                <span class="text-warning fw-bold">{{ format_currency(event.event_fee) }}</span>
+                                            {% else %}
+                                                <span class="text-success">Free</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ event.created_at.strftime('%Y-%m-%d') }}</td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{{ url_for('admin_approve_event', event_id=event.id) }}" class="btn btn-success" onclick="return confirm('Approve this event?')">
+                                                    <i class="fas fa-check"></i> Approve
+                                                </a>
+                                                <a href="{{ url_for('admin_reject_event', event_id=event.id) }}" class="btn btn-danger" onclick="return confirm('Reject this event?')">
+                                                    <i class="fas fa-times"></i> Reject
+                                                </a>
+                                                <a href="{{ url_for('event_detail', event_id=event.id) }}" class="btn btn-info" target="_blank">
+                                                    <i class="fas fa-eye"></i> View
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-check-circle fa-3x text-success mb-2"></i>
+                            <p class="mb-0">No pending events to approve.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Audit Logs -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow border-0">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-history me-2"></i>Recent Audit Logs</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Admin</th>
+                                    <th>Action</th>
+                                    <th>Details</th>
+                                    <th>IP Address</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in recent_logs %}
+                                <tr>
+                                    <td>{{ log.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td>{{ log.user.username }}</td>
+                                    <td>
+                                        <span class="badge bg-info">{{ log.action }}</span>
+                                    </td>
+                                    <td>{{ log.details }}</td>
+                                    <td>{{ log.ip_address }}</td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center">No audit logs available.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.stat-card {
+    background: linear-gradient(135deg, #F39C12 0%, #E67E22 100%);
+    color: white;
+    border-radius: 15px;
+    transition: transform 0.3s ease;
+}
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+</style>
+{% endblock %}

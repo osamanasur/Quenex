@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Server Error - Quenex{% endblock %}
+
+{% block content %}
+<div class="container text-center mt-5 pt-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="error-container py-5">
+                <i class="fas fa-exclamation-triangle fa-5x text-warning mb-4"></i>
+                <h1 class="display-1 fw-bold text-primary">500</h1>
+                <h2 class="mb-4">Internal Server Error</h2>
+                <p class="lead text-muted mb-4">Something went wrong on our end. Please try again later.</p>
+                <p class="text-muted mb-4">If the problem persists, please contact our support team.</p>
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="{{ url_for('index') }}" class="btn btn-primary-custom">
+                        <i class="fas fa-home me-2"></i>Back to Home
+                    </a>
+                    <a href="{{ url_for('help_page') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-question-circle me-2"></i>Get Help
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.error-container {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 5px 30px rgba(0,0,0,0.05);
+}
+</style>
+{% endblock %}

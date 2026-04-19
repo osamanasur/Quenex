@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}My Events - Quenex{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-5 pt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="display-5 fw-bold">
+                    <i class="fas fa-calendar-alt text-primary me-2"></i>My Events
+                </h1>
+                <a href="{{ url_for('create_event') }}" class="btn btn-primary-custom">
+                    <i class="fas fa-plus-circle me-2"></i>Create New Event
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {% if events %}
+        <div class="card shadow border-0">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Event</th>
+                                <th>Category</th>
+                                <th>Date</th>
+                                <th>Venue</th>
+                                <th>Tickets Sold</th>
+                                <th>Revenue</th>
+                                <th>Status</th>
+                                <th>Payment</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for event in events %}
+                            {% set sold_count = namespace(value=0) %}
+                            {% set revenue = namespace(value=0) %}
+                            {% for booking in event.bookings %}
+                                {% if booking.status == 'confirmed' %}
+                                    {% set sold_count.value = sold_count.value + booking.quantity %}
+                                    {% if booking.payment and booking.payment.status == 'completed' %}
+                                        {% set revenue.value = revenue.value + booking.total_amount %}
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                            <tr>
+                                <td>
+                                    <strong>{{ event.title }}</strong><br>
+                                    <small class="text-muted">{{ event.created_at.strftime('%Y-%m-%d') }}</small>
+                                </td>
+                                <td>{{ categories[event.category].name }}</td>
+                                <td>{{ event.date.strftime('%Y-%m-%d') }}</td>
+                                <td>{{ event.venue[:40] }}{% if event.venue|length > 40 %}...{% endif %}</td>
+                                <td>{{ sold_count.value }} / {{ event.capacity }}</td>
+                                <td>{{ format_currency(revenue.value) }}</td>
+                                <td>
+                                    {% if event.status == 'approved' %}
+                                        <span class="badge bg-success">Approved</span>
+                                    {% elif event.status == 'pending' %}
+                                        <span class="badge bg-warning">Pending</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Rejected</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if event.is_paid %}
+                                        <span class="badge bg-success">Paid</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Unpaid</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        {% if not event.is_paid and event.status == 'pending' %}
+                                            <a href="{{ url_for('pay_event_fee', event_id=event.id) }}" class="btn btn-warning" title="Pay Now">
+                                                <i class="fas fa-money-bill-wave"></i>
+                                            </a>
+                                        {% endif %}
+                                        <a href="{{ url_for('event_analytics', event_id=event.id) }}" class="btn btn-info" title="Analytics">
+                                            <i class="fas fa-chart-line"></i>
+                                        </a>
+                                        <a href="{{ url_for('manage_tickets', event_id=event.id) }}" class="btn btn-primary" title="Manage Tickets">
+                                            <i class="fas fa-ticket-alt"></i>
+                                        </a>
+                                        <a href="{{ url_for('edit_event', event_id=event.id) }}" class="btn btn-warning" title="Edit Event">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{{ url_for('event_detail', event_id=event.id) }}" class="btn btn-success" target="_blank" title="View">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="card shadow border-0">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-calendar-times fa-4x text-muted mb-3"></i>
+                <h5>No Events Yet</h5>
+                <p class="text-muted">You haven't created any events. Start by creating your first event!</p>
+                <a href="{{ url_for('create_event') }}" class="btn btn-primary-custom mt-2">
+                    <i class="fas fa-plus-circle me-2"></i>Create Your First Event
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

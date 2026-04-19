@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+
+{% block title %}Browse Events - Quenex{% endblock %}
+
+{% block content %}
+<div class="container mt-5 pt-5">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <h1 class="display-4 fw-bold">Browse Events</h1>
+            <p class="lead text-muted">Discover amazing events happening in Uganda</p>
+            <div class="title-underline mx-auto"></div>
+        </div>
+    </div>
+
+    <!-- Search and Filter Bar -->
+    <div class="row mb-4 g-3">
+        <div class="col-md-5">
+            <div class="search-box">
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="Search events..." id="searchInput" value="{{ search }}">
+                    <button class="btn btn-primary-custom" onclick="searchEvents()">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <select class="form-select" id="categoryFilter" onchange="filterByCategory(this.value)">
+                <option value="">All Categories</option>
+                {% for key, cat in categories.items() %}
+                <option value="{{ key }}" {% if selected_category == key %}selected{% endif %}>
+                    {{ cat.name }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <input type="date" class="form-control" id="dateFilter" placeholder="Filter by date" onchange="filterByDate()">
+        </div>
+        <div class="col-md-2">
+            <button class="btn btn-outline-secondary w-100" onclick="clearFilters()">
+                <i class="fas fa-undo-alt"></i> Clear
+            </button>
+        </div>
+    </div>
+
+    <!-- Events Grid -->
+    <div class="row" id="eventsContainer">
+        {% if events %}
+            {% for event in events %}
+            <div class="col-md-4 mb-4">
+                <div class="card event-card h-100">
+                    <div class="event-image-wrapper">
+                        <img src="{{ url_for('static', filename='uploads/' + event.image) }}" class="card-img-top event-img" alt="{{ event.title }}">
+                        <div class="event-date-badge">
+                            <span class="date-day">{{ event.date.strftime('%d') }}</span>
+                            <span class="date-month">{{ event.date.strftime('%b') }}</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <span class="badge bg-primary mb-2">{{ categories[event.category].name }}</span>
+                        <h5 class="card-title">{{ event.title }}</h5>
+                        <p class="card-text text-muted small">
+                            <i class="fas fa-map-marker-alt"></i> {{ event.venue[:50] }}{% if event.venue|length > 50 %}...{% endif %}<br>
+                            <i class="fas fa-clock"></i> {{ event.time }}
+                        </p>
+                        <p class="card-text small">{{ event.description[:80] }}{% if event.description|length > 80 %}...{% endif %}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                <i class="fas fa-users"></i> {{ event.capacity }} seats
+                            </small>
+                            <a href="{{ url_for('event_detail', event_id=event.id) }}" class="btn btn-primary-custom btn-sm">
+                                View Details <i class="fas fa-arrow-right ms-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="empty-state text-center py-5">
+                    <i class="fas fa-calendar-times fa-4x text-muted mb-3"></i>
+                    <h5>No events found</h5>
+                    <p class="text-muted">Try adjusting your search or filter criteria</p>
+                    <button class="btn btn-primary-custom mt-2" onclick="clearFilters()">
+                        <i class="fas fa-undo-alt"></i> Clear All Filters
+                    </button>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Loading Indicator -->
+    <div id="loadingIndicator" class="text-center py-4" style="display: none;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+</div>
+
+<style>
+.title-underline {
+    width: 60px;
+    height: 3px;
+    background: #F39C12;
+    margin: 10px auto 0;
+    border-radius: 2px;
+}
+.event-image-wrapper {
+    position: relative;
+    overflow: hidden;
+}
+.event-img {
+    height: 200px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+.event-card:hover .event-img {
+    transform: scale(1.05);
+}
+.event-date-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: white;
+    border-radius: 8px;
+    text-align: center;
+    padding: 5px 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+.date-day {
+    display: block;
+    font-size: 18px;
+    font-weight: bold;
+    color: #F39C12;
+}
+.date-month {
+    display: block;
+    font-size: 10px;
+    text-transform: uppercase;
+    color: #666;
+}
+.search-box {
+    background: white;
+    border-radius: 50px;
+    padding: 3px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+.empty-state {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 60px 20px;
+}
+</style>
+
+<script>
+function searchEvents() {
+    let searchTerm = document.getElementById('searchInput').value;
+    let category = document.getElementById('categoryFilter').value;
+    let date = document.getElementById('dateFilter').value;
+    let url = "{{ url_for('events') }}?";
+    let params = [];
+    if (searchTerm) params.push("search=" + encodeURIComponent(searchTerm));
+    if (category) params.push("category=" + category);
+    if (date) params.push("date=" + date);
+    window.location.href = url + params.join("&");
+}
+
+function filterByCategory(category) {
+    let searchTerm = document.getElementById('searchInput').value;
+    let date = document.getElementById('dateFilter').value;
+    let url = "{{ url_for('events') }}?";
+    let params = [];
+    if (category) params.push("category=" + category);
+    if (searchTerm) params.push("search=" + encodeURIComponent(searchTerm));
+    if (date) params.push("date=" + date);
+    window.location.href = url + params.join("&");
+}
+
+function filterByDate() {
+    let searchTerm = document.getElementById('searchInput').value;
+    let category = document.getElementById('categoryFilter').value;
+    let date = document.getElementById('dateFilter').value;
+    let url = "{{ url_for('events') }}?";
+    let params = [];
+    if (date) params.push("date=" + date);
+    if (searchTerm) params.push("search=" + encodeURIComponent(searchTerm));
+    if (category) params.push("category=" + category);
+    window.location.href = url + params.join("&");
+}
+
+function clearFilters() {
+    window.location.href = "{{ url_for('events') }}";
+}
+</script>
+{% endblock %}

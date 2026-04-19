@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Checkout - {{ event.title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5 pt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow border-0">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-shopping-cart me-2"></i>Checkout (DEMO MODE)</h4>
+                </div>
+                <div class="card-body p-4">
+                    <!-- DEMO MODE NOTICE -->
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>DEMONSTRATION MODE</strong><br>
+                        This is a simulated ticket purchase. No real money will be deducted.
+                        In production, this would integrate with MTN/Airtel Mobile Money API.
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <h5 class="mb-3">Order Summary</h5>
+                        <div class="row">
+                            <div class="col-6">
+                                <p class="mb-1"><strong>Event:</strong></p>
+                                <p class="mb-1"><strong>Venue:</strong></p>
+                                <p class="mb-1"><strong>Date:</strong></p>
+                            </div>
+                            <div class="col-6">
+                                <p class="mb-1">{{ event.title }}</p>
+                                <p class="mb-1">{{ event.venue }}</p>
+                                <p class="mb-1">{{ event.date.strftime('%B %d, %Y') }} at {{ event.time }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <form method="POST" id="checkoutForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Ticket Type *</label>
+                                <select class="form-select" name="ticket_type" id="ticketType" required onchange="updateTotal()">
+                                    <option value="">Select ticket type</option>
+                                    {% for ticket in ticket_types %}
+                                    <option value="{{ ticket.name }}" data-price="{{ ticket.price }}">
+                                        {{ ticket.name }} - {{ format_currency(ticket.price) }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Quantity *</label>
+                                <input type="number" class="form-control" name="quantity" id="quantity" min="1" max="10" value="1" required onchange="updateTotal()">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Total Amount</label>
+                                <h3 class="text-primary" id="totalAmount">{{ format_currency(0) }}</h3>
+                            </div>
+                            
+                            <hr class="my-3">
+                            
+                            <h5>Attendee Information</h5>
+                            <div class="col-12">
+                                <label class="form-label">Full Name *</label>
+                                <input type="text" class="form-control" name="attendee_name" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Phone Number *</label>
+                                <input type="tel" class="form-control" name="attendee_phone" required placeholder="+256 XXX XXX XXX">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Mobile Money Number (Demo)</label>
+                                <input type="tel" class="form-control" name="mobile_money_number" id="mobileMoney" required placeholder="256XXXXXXXXX">
+                                <small class="text-muted">Enter any number for demo - no real charge</small>
+                            </div>
+                            
+                            <div class="col-12 mt-4">
+                                <button type="submit" class="btn btn-primary-custom w-100 py-2">
+                                    <i class="fas fa-mobile-alt me-2"></i>Simulate Ticket Purchase
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentPrice = 0;
+
+function updateTotal() {
+    const select = document.getElementById('ticketType');
+    const selectedOption = select.options[select.selectedIndex];
+    currentPrice = parseFloat(selectedOption.getAttribute('data-price')) || 0;
+    const quantity = parseInt(document.getElementById('quantity').value) || 0;
+    const total = currentPrice * quantity;
+    document.getElementById('totalAmount').innerHTML = 'UGX ' + total.toLocaleString('en-UG', {minimumFractionDigits: 0});
+}
+
+document.getElementById('ticketType').addEventListener('change', updateTotal);
+document.getElementById('quantity').addEventListener('change', updateTotal);
+</script>
+{% endblock %}

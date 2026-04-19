@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% block title %}Organizer Dashboard - Quenex{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-5 pt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="welcome-card p-4 mb-4 rounded">
+                <h1 class="display-5 fw-bold mb-2">
+                    <i class="fas fa-tachometer-alt text-primary me-2"></i>Organizer Dashboard
+                </h1>
+                <p class="lead mb-0">Welcome back, {{ current_user.username }}! <i class="fas fa-smile-wink"></i></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4 g-4">
+        <div class="col-md-3">
+            <div class="stat-card text-center p-3">
+                <i class="fas fa-calendar-alt fa-2x mb-2"></i>
+                <h2 class="mb-0">{{ total_events }}</h2>
+                <p class="mb-0">Total Events</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card text-center p-3">
+                <i class="fas fa-ticket-alt fa-2x mb-2"></i>
+                <h2 class="mb-0">{{ total_bookings }}</h2>
+                <p class="mb-0">Tickets Sold</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card text-center p-3">
+                <i class="fas fa-users fa-2x mb-2"></i>
+                <h2 class="mb-0">{{ "%.0f"|format(total_bookings / total_events) if total_events > 0 else 0 }}</h2>
+                <p class="mb-0">Avg per Event</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card text-center p-3">
+                <i class="fas fa-money-bill-wave fa-2x mb-2"></i>
+                <h2 class="mb-0">{{ format_currency(total_revenue) }}</h2>
+                <p class="mb-0">Total Revenue</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow border-0">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <a href="{{ url_for('create_event') }}" class="btn btn-outline-primary w-100 py-2">
+                                <i class="fas fa-plus-circle me-2"></i>Create Event
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ url_for('organizer_my_events') }}" class="btn btn-outline-primary w-100 py-2">
+                                <i class="fas fa-calendar-alt me-2"></i>My Events
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ url_for('help_page') }}" class="btn btn-outline-primary w-100 py-2">
+                                <i class="fas fa-question-circle me-2"></i>Help & Support
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ url_for('contact') }}" class="btn btn-outline-primary w-100 py-2">
+                                <i class="fas fa-envelope me-2"></i>Contact Us
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending Payment Alert -->
+    {% if pending_payment > 0 %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Action Required!</strong> You have {{ pending_payment }} event(s) awaiting payment. 
+                Please complete payment to publish your events.
+                <a href="{{ url_for('organizer_my_events') }}" class="alert-link">View pending events</a>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Recent Events -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow border-0">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Your Recent Events</h5>
+                </div>
+                <div class="card-body">
+                    {% if events %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Event</th>
+                                        <th>Category</th>
+                                        <th>Date</th>
+                                        <th>Venue</th>
+                                        <th>Tickets Sold</th>
+                                        <th>Revenue</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for event in events[:5] %}
+                                    {% set sold = namespace(value=0) %}
+                                    {% set rev = namespace(value=0) %}
+                                    {% for booking in event.bookings %}
+                                        {% if booking.status == 'confirmed' %}
+                                            {% set sold.value = sold.value + booking.quantity %}
+                                            {% if booking.payment and booking.payment.status == 'completed' %}
+                                                {% set rev.value = rev.value + booking.total_amount %}
+                                            {% endif %}
+                                        {% endif %}
+                                    {% endfor %}
+                                    <tr>
+                                        <td><strong>{{ event.title }}</strong><br>
+                                            <small class="text-muted">{{ event.created_at.strftime('%Y-%m-%d') }}</small>
+                                        </td>
+                                        <td>{{ categories[event.category].name }}</td>
+                                        <td>{{ event.date.strftime('%Y-%m-%d') }}</td>
+                                        <td>{{ event.venue[:30] }}{% if event.venue|length > 30 %}...{% endif %}</td>
+                                        <td>{{ sold.value }} / {{ event.capacity }}</td>
+                                        <td>{{ format_currency(rev.value) }}</td>
+                                        <td>
+                                            {% if event.status == 'approved' and event.is_paid %}
+                                                <span class="badge bg-success">Published</span>
+                                            {% elif event.status == 'pending' and not event.is_paid %}
+                                                <span class="badge bg-warning">Pending Payment</span>
+                                            {% elif event.status == 'pending' %}
+                                                <span class="badge bg-info">Pending Approval</span>
+                                            {% elif event.status == 'rejected' %}
+                                                <span class="badge bg-danger">Rejected</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                {% if not event.is_paid and event.status == 'pending' %}
+                                                    <a href="{{ url_for('pay_event_fee', event_id=event.id) }}" class="btn btn-warning" title="Pay Now">
+                                                        <i class="fas fa-money-bill-wave"></i>
+                                                    </a>
+                                                {% endif %}
+                                                <a href="{{ url_for('event_analytics', event_id=event.id) }}" class="btn btn-info" title="Analytics">
+                                                    <i class="fas fa-chart-line"></i>
+                                                </a>
+                                                <a href="{{ url_for('manage_tickets', event_id=event.id) }}" class="btn btn-primary" title="Manage Tickets">
+                                                    <i class="fas fa-ticket-alt"></i>
+                                                </a>
+                                                <a href="{{ url_for('event_detail', event_id=event.id) }}" class="btn btn-success" target="_blank" title="View">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% if events|length > 5 %}
+                            <div class="text-center mt-3">
+                                <a href="{{ url_for('organizer_my_events') }}" class="btn btn-outline-primary">
+                                    View All Events <i class="fas fa-arrow-right ms-1"></i>
+                                </a>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-calendar-alt fa-4x text-muted mb-3"></i>
+                            <h5>No Events Yet</h5>
+                            <p class="text-muted">You haven't created any events yet.</p>
+                            <a href="{{ url_for('create_event') }}" class="btn btn-primary-custom mt-2">
+                                <i class="fas fa-plus-circle me-2"></i>Create Your First Event
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.welcome-card {
+    background: linear-gradient(135deg, #FDEBD0 0%, #FFF 100%);
+    border-left: 5px solid #F39C12;
+}
+.stat-card {
+    background: linear-gradient(135deg, #F39C12 0%, #E67E22 100%);
+    color: white;
+    border-radius: 15px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(243, 156, 18, 0.3);
+}
+</style>
+{% endblock %}

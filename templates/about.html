@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block title %}About Quenex{% endblock %}
+
+{% block content %}
+<div class="container mt-5 pt-5">
+    <!-- Hero Section -->
+    <div class="row mb-5">
+        <div class="col-12 text-center">
+            <h1 class="display-4 fw-bold">About Quenex</h1>
+            <p class="lead text-muted">Revolutionizing Event Management in Uganda</p>
+            <div class="title-underline mx-auto"></div>
+        </div>
+    </div>
+
+    <!-- Mission & Vision -->
+    <div class="row mb-5 g-4">
+        <div class="col-md-6">
+            <div class="card shadow h-100 border-0 mission-card">
+                <div class="card-body text-center p-4">
+                    <div class="icon-circle bg-primary mb-3">
+                        <i class="fas fa-bullseye fa-2x text-white"></i>
+                    </div>
+                    <h3>Our Mission</h3>
+                    <p class="text-muted">To provide a seamless, accessible, and efficient digital platform that connects event organizers with attendees in Uganda, eliminating manual inefficiencies and promoting economic growth through technology.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow h-100 border-0 vision-card">
+                <div class="card-body text-center p-4">
+                    <div class="icon-circle bg-primary mb-3">
+                        <i class="fas fa-eye fa-2x text-white"></i>
+                    </div>
+                    <h3>Our Vision</h3>
+                    <p class="text-muted">To become Uganda's leading events management platform, empowering secondary cities with digital solutions that transform how communities plan, promote, and participate in events.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- The Challenge -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card bg-light shadow border-0">
+                <div class="card-body p-5">
+                    <h2 class="text-center mb-4">The Challenge We're Solving</h2>
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <div class="challenge-card text-center">
+                                <i class="fas fa-phone-alt fa-3x text-danger mb-3"></i>
+                                <h5>Manual Processes</h5>
+                                <p class="text-muted">Phone calls and physical bookings leading to overbooking and confusion</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="challenge-card text-center">
+                                <i class="fas fa-chart-line fa-3x text-warning mb-3"></i>
+                                <h5>Limited Visibility</h5>
+                                <p class="text-muted">Events promoted only through posters and radio, missing potential attendees</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="challenge-card text-center">
+                                <i class="fas fa-file-invoice-dollar fa-3x text-info mb-3"></i>
+                                <h5>Poor Record Keeping</h5>
+                                <p class="text-muted">Manual sales tracking leading to revenue loss and poor decision making</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Our Solution -->
+    <div class="row mb-5">
+        <div class="col-12 text-center mb-4">
+            <h2 class="section-title">Our Solution</h2>
+            <div class="title-underline mx-auto"></div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="solution-card text-center p-4">
+                <i class="fas fa-globe fa-3x text-primary mb-3"></i>
+                <h5>Web-Based Platform</h5>
+                <p>Accessible from any device with internet connection</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="solution-card text-center p-4">
+                <i class="fas fa-mobile-alt fa-3x text-primary mb-3"></i>
+                <h5>Mobile Money Integration</h5>
+                <p>Seamless payments using MTN or Airtel Mobile Money</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="solution-card text-center p-4">
+                <i class="fas fa-chart-bar fa-3x text-primary mb-3"></i>
+                <h5>Real-Time Analytics</h5>
+                <p>Track sales, attendance, and revenue instantly</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Team Section -->
+    <div class="row mb-5">
+        <div class="col-12 text-center mb-4">
+            <h2 class="section-title">Our Team</h2>
+            <div class="title-underline mx-auto"></div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="team-card text-center p-4">
+                <div class="team-avatar mb-3">
+                    <i class="fas fa-user-circle fa-4x text-primary"></i>
+                </div>
+                <h5>Chandia Eric</h5>
+                <p class="text-muted">Lead Developer & Researcher</p>
+                <p>Information Technology Student, Muni University</p>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="team-card text-center p-4">
+                <div class="team-avatar mb-3">
+                    <i class="fas fa-user-circle fa-4x text-primary"></i>
+                </div>
+                <h5>Rayan Kamal</h5>
+                <p class="text-muted">Co-Developer & Systems Analyst</p>
+                <p>Information Technology Student, Muni University</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.title-underline {
+    width: 60px;
+    height: 3px;
+    background: #F39C12;
+    margin: 10px auto 0;
+    border-radius: 2px;
+}
+.icon-circle {
+    width: 70px;
+    height: 70px;
+    background: #F39C12;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+}
+.mission-card, .vision-card {
+    transition: transform 0.3s ease;
+}
+.mission-card:hover, .vision-card:hover {
+    transform: translateY(-5px);
+}
+.challenge-card, .solution-card, .team-card {
+    background: white;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+.challenge-card:hover, .solution-card:hover, .team-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+}
+.section-title {
+    font-weight: 700;
+    position: relative;
+    display: inline-block;
+}
+</style>
+{% endblock %}

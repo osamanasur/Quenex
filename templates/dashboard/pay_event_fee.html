@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Pay Event Fee - Quenex{% endblock %}
+
+{% block content %}
+<div class="container mt-5 pt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow border-0">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-money-bill-wave me-2"></i>Pay Event Posting Fee (DEMO MODE)</h4>
+                </div>
+                <div class="card-body p-4">
+                    <!-- DEMO MODE NOTICE -->
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>DEMONSTRATION MODE</strong><br>
+                        This is a simulated payment. No real money will be deducted.
+                        In production, this would integrate with MTN/Airtel Mobile Money API.
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <h5 class="mb-2">{{ event.title }}</h5>
+                        <p class="mb-1"><strong>Category:</strong> {{ categories[event.category].name }}</p>
+                        <p class="mb-1"><strong>Venue:</strong> {{ event.venue }}</p>
+                        <hr>
+                        <h3 class="text-primary text-center mb-0">{{ format_currency(event.event_fee) }}</h3>
+                        <p class="text-center text-muted small">Amount Due (Demo)</p>
+                    </div>
+                    
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label class="form-label">Mobile Money Number (Demo - No charge)</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-mobile-alt"></i></span>
+                                <input type="tel" class="form-control" name="mobile_money_number" 
+                                       id="mobileMoney" placeholder="256XXXXXXXXX" required>
+                            </div>
+                            <small class="text-muted">Enter any number for demo purposes</small>
+                        </div>
+                        
+                        <div class="alert alert-warning small">
+                            <i class="fas fa-info-circle me-1"></i>
+                            <strong>Demo Mode:</strong> Clicking "Pay" will simulate a successful payment. No actual money will be deducted.
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary-custom w-100 py-2">
+                            <i class="fas fa-mobile-alt me-2"></i>Simulate Payment of {{ format_currency(event.event_fee) }}
+                        </button>
+                    </form>
+                    
+                    <hr>
+                    <p class="text-center mb-0">
+                        <a href="{{ url_for('organizer_my_events') }}" class="text-muted">
+                            <i class="fas fa-arrow-left me-1"></i>Back to My Events
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+
+{% block title %}{{ event.title }} - Quenex{% endblock %}
+
+{% block content %}
+<div class="container mt-5 pt-5">
+    <div class="row g-4">
+        <!-- Event Main Content -->
+        <div class="col-lg-8">
+            <!-- Event Image -->
+            <div class="card shadow border-0 mb-4">
+                <img src="{{ url_for('static', filename='uploads/' + event.image) }}" class="card-img-top" alt="{{ event.title }}" style="max-height: 400px; object-fit: cover;">
+                <div class="card-body">
+                    <span class="badge bg-primary mb-2">{{ categories[event.category].name }}</span>
+                    <h2 class="card-title">{{ event.title }}</h2>
+                    
+                    <div class="row mt-3 g-3">
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <i class="fas fa-calendar-alt text-primary"></i>
+                                <strong>Date:</strong> {{ event.date.strftime('%B %d, %Y') }}
+                            </div>
+                            <div class="info-item mt-2">
+                                <i class="fas fa-clock text-primary"></i>
+                                <strong>Time:</strong> {{ event.time }}
+                            </div>
+                            <div class="info-item mt-2">
+                                <i class="fas fa-map-marker-alt text-primary"></i>
+                                <strong>Venue:</strong> {{ event.venue }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <i class="fas fa-users text-primary"></i>
+                                <strong>Capacity:</strong> {{ event.capacity }} people
+                            </div>
+                            <div class="info-item mt-2">
+                                <i class="fas fa-chart-line text-primary"></i>
+                                <strong>Status:</strong> 
+                                {% if event.date > today %}
+                                    <span class="badge bg-success">Upcoming</span>
+                                {% elif event.date == today %}
+                                    <span class="badge bg-warning">Today</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Past</span>
+                                {% endif %}
+                            </div>
+                            <div class="info-item mt-2">
+                                <i class="fas fa-user text-primary"></i>
+                                <strong>Organizer:</strong> {{ event.organizer.username }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <h5><i class="fas fa-align-left text-primary me-2"></i>About This Event</h5>
+                    <p class="card-text">{{ event.description }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ticket Purchase Sidebar -->
+        <div class="col-lg-4">
+            <div class="card shadow border-0 sticky-top" style="top: 90px;">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-ticket-alt me-2"></i>Get Your Tickets</h5>
+                </div>
+                <div class="card-body">
+                    {% if event.date >= today %}
+                        {% if ticket_types %}
+                            <form method="POST" action="{{ url_for('checkout', event_id=event.id) }}" onsubmit="return validatePaymentForm()">
+                                <div class="mb-3">
+                                    <label class="form-label">Select Ticket Type</label>
+                                    <select class="form-select" id="ticket_type" name="ticket_type" required onchange="updatePrice(); checkAvailability()">
+                                        <option value="">Choose ticket type</option>
+                                        {% for ticket in ticket_types %}
+                                        <option value="{{ ticket.name }}" data-price="{{ ticket.price }}" data-available="{{ ticket.quantity_available }}">
+                                            {{ ticket.name }} - {{ format_currency(ticket.price) }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                    <div id="availabilityMsg" class="small mt-1"></div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Quantity</label>
+                                    <input type="number" class="form-control" id="quantity" name="quantity" min="1" max="10" value="1" required onchange="updateTotal(); checkAvailability()">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Total Amount</label>
+                                    <h4 class="text-primary" id="totalAmount">{{ format_currency(0) }}</h4>
+                                </div>
+                                
+                                <hr>
+                                
+                                <h6><i class="fas fa-user-check me-1"></i> Attendee Information</h6>
+                                <div class="mb-3">
+                                    <label class="form-label">Full Name *</label>
+                                    <input type="text" class="form-control" name="attendee_name" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Phone Number *</label>
+                                    <input type="tel" class="form-control" id="attendee_phone" name="attendee_phone" placeholder="+256 XXX XXX XXX" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Mobile Money Number *</label>
+                                    <input type="tel" class="form-control" id="mobile_money_number" name="mobile_money_number" placeholder="256XXXXXXXXX" required>
+                                    <small class="text-muted">We'll charge this number for the tickets (MTN or Airtel)</small>
+                                </div>
+                                
+                                {% if current_user.is_authenticated %}
+                                    <button type="submit" class="btn btn-primary-custom w-100">
+                                        <i class="fas fa-mobile-alt me-2"></i> Pay with Mobile Money
+                                    </button>
+                                {% else %}
+                                    <a href="{{ url_for('login') }}" class="btn btn-primary-custom w-100">
+                                        <i class="fas fa-sign-in-alt me-2"></i> Login to Purchase
+                                    </a>
+                                    <p class="text-center mt-2 small">
+                                        Don't have an account? <a href="{{ url_for('register') }}">Register here</a>
+                                    </p>
+                                {% endif %}
+                            </form>
+                        {% else %}
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle"></i> No ticket types available for this event.
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="alert alert-secondary">
+                            <i class="fas fa-calendar-times"></i> This event has already passed.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Share Event -->
+            <div class="card shadow border-0 mt-3">
+                <div class="card-body">
+                    <h6><i class="fas fa-share-alt me-2"></i>Share This Event</h6>
+                    <div class="d-flex justify-content-around mt-3">
+                        <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.url }}" target="_blank" class="text-primary">
+                            <i class="fab fa-facebook fa-2x"></i>
+                        </a>
+                        <a href="https://twitter.com/intent/tweet?text={{ event.title }}&url={{ request.url }}" target="_blank" class="text-info">
+                            <i class="fab fa-twitter fa-2x"></i>
+                        </a>
+                        <a href="https://wa.me/?text={{ event.title }} - {{ request.url }}" target="_blank" class="text-success">
+                            <i class="fab fa-whatsapp fa-2x"></i>
+                        </a>
+                        <a href="#" class="text-danger" onclick="copyToClipboard('{{ request.url }}', 'copyLinkBtn')" id="copyLinkBtn">
+                            <i class="fas fa-link fa-2x"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.info-item {
+    padding: 5px 0;
+}
+</style>
+
+<script>
+let currentPrice = 0;
+
+function updatePrice() {
+    const select = document.getElementById('ticket_type');
+    const selectedOption = select.options[select.selectedIndex];
+    currentPrice = parseFloat(selectedOption.getAttribute('data-price')) || 0;
+    updateTotal();
+}
+
+function updateTotal() {
+    const quantity = parseInt(document.getElementById('quantity').value) || 0;
+    const total = currentPrice * quantity;
+    document.getElementById('totalAmount').innerText = 'UGX ' + total.toLocaleString('en-UG', {minimumFractionDigits: 0});
+}
+
+async function checkAvailability() {
+    const select = document.getElementById('ticket_type');
+    const selectedOption = select.options[select.selectedIndex];
+    const ticketType = selectedOption.value;
+    const quantity = parseInt(document.getElementById('quantity').value) || 1;
+    
+    if (!ticketType) return;
+    
+    const eventId = {{ event.id }};
+    const availabilityMsg = document.getElementById('availabilityMsg');
+    
+    try {
+        const response = await fetch(`/api/event/${eventId}/check-availability?ticket_type=${ticketType}&quantity=${quantity}`);
+        const data = await response.json();
+        
+        if (data.available) {
+            availabilityMsg.innerHTML = `<span class="text-success">✓ ${data.remaining} tickets available</span>`;
+            availabilityMsg.className = 'text-success small mt-1';
+        } else {
+            availabilityMsg.innerHTML = `<span class="text-danger">✗ Only ${data.remaining} tickets available</span>`;
+            availabilityMsg.className = 'text-danger small mt-1';
+        }
+    } catch (error) {
+        console.error('Error checking availability:', error);
+    }
+}
+
+function validatePaymentForm() {
+    const mobileNumber = document.getElementById('mobile_money_number').value;
+    const ugandaRegex = /^(256|0)[7-9][0-9]{8}$/;
+    if (!ugandaRegex.test(mobileNumber)) {
+        alert('Please enter a valid Mobile Money number (e.g., 2567XXXXXXXX or 07XXXXXXXX)');
+        return false;
+    }
+    return true;
+}
+
+function copyToClipboard(text, btnId) {
+    navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById(btnId);
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check fa-2x"></i>';
+        setTimeout(() => {
+            btn.innerHTML = originalHtml;
+        }, 2000);
+    });
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const select = document.getElementById('ticket_type');
+    if (select) {
+        select.addEventListener('change', updatePrice);
+        select.addEventListener('change', checkAvailability);
+    }
+    const quantity = document.getElementById('quantity');
+    if (quantity) {
+        quantity.addEventListener('change', updateTotal);
+        quantity.addEventListener('change', checkAvailability);
+    }
+});
+</script>
+{% endblock %}

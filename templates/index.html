@@ -1,0 +1,263 @@
+{% extends "base.html" %}
+
+{% block title %}Find & Book Events in Uganda{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container text-center">
+        <h1 class="display-4 fw-bold mb-4 animate__animated animate__fadeInUp">
+            Discover Amazing Events in Uganda
+        </h1>
+        <p class="lead mb-4 animate__animated animate__fadeInUp animate__delay-1s">
+            Find and book tickets for the best events - from concerts to conferences, weddings to workshops
+        </p>
+        <div class="row justify-content-center animate__animated animate__fadeInUp animate__delay-2s">
+            <div class="col-md-8">
+                <div class="search-box">
+                    <div class="input-group input-group-lg">
+                        <input type="text" class="form-control" placeholder="Search events by name, venue, or description..." id="searchInput">
+                        <button class="btn btn-light" onclick="searchEvents()">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="container">
+    <!-- Categories Section - NO PRICES DISPLAYED -->
+    <div class="row mb-5">
+        <div class="col-12 text-center mb-4">
+            <h2 class="section-title">Browse by Category</h2>
+            <p class="text-muted">Find the perfect event for every occasion</p>
+            <div class="title-underline"></div>
+        </div>
+        {% for key, cat in categories.items() %}
+        <div class="col-lg-2 col-md-3 col-6 mb-3">
+            <a href="{{ url_for('events', category=key) }}" class="text-decoration-none">
+                <div class="category-card text-center p-3">
+                    <div class="category-icon-wrapper">
+                        <i class="fas {{ cat.icon }} fa-3x category-icon"></i>
+                    </div>
+                    <h6 class="mt-2 fw-bold">{{ cat.name }}</h6>
+                    <small class="text-muted">{{ cat.description|truncate(30) }}</small>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Featured/Upcoming Events -->
+    <div class="row mb-5">
+        <div class="col-12 text-center mb-4">
+            <h2 class="section-title">Upcoming Events</h2>
+            <p class="text-muted">Don't miss out on these exciting events</p>
+            <div class="title-underline"></div>
+        </div>
+        {% if events %}
+            {% for event in events %}
+            <div class="col-md-4 mb-4">
+                <div class="card event-card h-100">
+                    <div class="event-image-wrapper">
+                        <img src="{{ url_for('static', filename='uploads/' + event.image) }}" class="card-img-top event-img" alt="{{ event.title }}">
+                        <div class="event-date-badge">
+                            <span class="date-day">{{ event.date.strftime('%d') }}</span>
+                            <span class="date-month">{{ event.date.strftime('%b') }}</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <span class="badge bg-primary mb-2">{{ categories[event.category].name }}</span>
+                        <h5 class="card-title">{{ event.title }}</h5>
+                        <p class="card-text text-muted small">
+                            <i class="fas fa-map-marker-alt"></i> {{ event.venue[:50] }}<br>
+                            <i class="fas fa-clock"></i> {{ event.time }}
+                        </p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                <i class="fas fa-users"></i> Capacity: {{ event.capacity }}
+                            </small>
+                            <a href="{{ url_for('event_detail', event_id=event.id) }}" class="btn btn-primary-custom btn-sm">
+                                View Details <i class="fas fa-arrow-right ms-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12 text-center">
+                <div class="empty-state">
+                    <i class="fas fa-calendar-times fa-4x text-muted mb-3"></i>
+                    <h5>No upcoming events at the moment</h5>
+                    <p class="text-muted">Check back soon for new events!</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Call to Action for Organizers -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="cta-section text-center p-5 rounded">
+                <i class="fas fa-chalkboard-user fa-3x mb-3"></i>
+                <h3>Are you an Event Organizer?</h3>
+                <p class="lead">List your events on Quenex and reach thousands of potential attendees in Uganda!</p>
+                {% if current_user.is_authenticated and current_user.role == 'organizer' %}
+                    <a href="{{ url_for('create_event') }}" class="btn btn-primary-custom btn-lg mt-2">
+                        <i class="fas fa-plus-circle"></i> Create Event Now
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('register') }}" class="btn btn-primary-custom btn-lg mt-2">
+                        <i class="fas fa-user-plus"></i> Register as Organizer
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Section -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="stats-section p-4 rounded">
+                <div class="row text-center">
+                    <div class="col-md-3 col-6 mb-3">
+                        <div class="stat-item">
+                            <i class="fas fa-calendar-alt fa-2x mb-2"></i>
+                            <h3 class="fw-bold">50+</h3>
+                            <p class="text-muted mb-0">Events Hosted</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6 mb-3">
+                        <div class="stat-item">
+                            <i class="fas fa-users fa-2x mb-2"></i>
+                            <h3 class="fw-bold">1000+</h3>
+                            <p class="text-muted mb-0">Happy Attendees</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6 mb-3">
+                        <div class="stat-item">
+                            <i class="fas fa-ticket-alt fa-2x mb-2"></i>
+                            <h3 class="fw-bold">5000+</h3>
+                            <p class="text-muted mb-0">Tickets Sold</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6 mb-3">
+                        <div class="stat-item">
+                            <i class="fas fa-smile fa-2x mb-2"></i>
+                            <h3 class="fw-bold">98%</h3>
+                            <p class="text-muted mb-0">Satisfaction Rate</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.section-title {
+    font-weight: 700;
+    position: relative;
+    display: inline-block;
+}
+.title-underline {
+    width: 60px;
+    height: 3px;
+    background: #F39C12;
+    margin: 10px auto 0;
+    border-radius: 2px;
+}
+.event-image-wrapper {
+    position: relative;
+    overflow: hidden;
+}
+.event-img {
+    height: 200px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+.event-card:hover .event-img {
+    transform: scale(1.05);
+}
+.event-date-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: white;
+    border-radius: 8px;
+    text-align: center;
+    padding: 5px 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+.date-day {
+    display: block;
+    font-size: 18px;
+    font-weight: bold;
+    color: #F39C12;
+}
+.date-month {
+    display: block;
+    font-size: 10px;
+    text-transform: uppercase;
+    color: #666;
+}
+.category-card {
+    transition: all 0.3s ease;
+    border-radius: 12px;
+    background: white;
+}
+.category-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 20px rgba(243, 156, 18, 0.2);
+}
+.category-icon-wrapper {
+    width: 60px;
+    height: 60px;
+    background: #FDEBD0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+}
+.category-icon {
+    color: #F39C12;
+}
+.cta-section {
+    background: linear-gradient(135deg, #FDEBD0 0%, #FFF 100%);
+    border: 1px solid #F39C12;
+}
+.stats-section {
+    background: linear-gradient(135deg, #F39C12 0%, #E67E22 100%);
+    color: white;
+}
+.stat-item {
+    color: white;
+}
+.stat-item i, .stat-item h3 {
+    color: white;
+}
+.empty-state {
+    padding: 60px 20px;
+    background: #f8f9fa;
+    border-radius: 12px;
+}
+.search-box {
+    background: rgba(255,255,255,0.95);
+    border-radius: 50px;
+    padding: 5px;
+}
+</style>
+
+<script>
+function searchEvents() {
+    let searchTerm = document.getElementById('searchInput').value;
+    if (searchTerm) {
+        window.location.href = "{{ url_for('events') }}?search=" + encodeURIComponent(searchTerm);
+    }
+}
+</script>
+{% endblock %}

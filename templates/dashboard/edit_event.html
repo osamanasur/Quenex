@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Event - {{ event.title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5 pt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow border-0">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-edit me-2"></i>Edit Event</h4>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" enctype="multipart/form-data">
+                        <div class="row g-3 mb-4">
+                            <div class="col-12">
+                                <label class="form-label">Event Title *</label>
+                                <input type="text" class="form-control" name="title" value="{{ event.title }}" required>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Description *</label>
+                                <textarea class="form-control" name="description" rows="5" required>{{ event.description }}</textarea>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Venue *</label>
+                                <input type="text" class="form-control" name="venue" value="{{ event.venue }}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Category</label>
+                                <input type="text" class="form-control" value="{{ categories[event.category].name }}" disabled>
+                                <small class="text-muted">Category cannot be changed after creation</small>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label">Event Date *</label>
+                                <input type="date" class="form-control" name="event_date" value="{{ event.date.strftime('%Y-%m-%d') }}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Event Time *</label>
+                                <input type="time" class="form-control" name="event_time" value="{{ event.time }}" required>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label">Maximum Capacity *</label>
+                                <input type="number" class="form-control" name="capacity" value="{{ event.capacity }}" required min="1">
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-12">
+                                <label class="form-label">Current Image</label>
+                                <div class="mb-2">
+                                    <img src="{{ url_for('static', filename='uploads/' + event.image) }}" alt="Current" style="max-height: 150px; border-radius: 8px;">
+                                </div>
+                                <label class="form-label">Change Image (optional)</label>
+                                <input type="file" class="form-control" name="event_image" accept="image/*">
+                            </div>
+                        </div>
+
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Note:</strong> Changes to event details will require re-approval by admin.
+                            {% if event.event_fee > 0 %}
+                                You will also need to repay the posting fee.
+                            {% endif %}
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary-custom btn-lg">
+                                <i class="fas fa-save me-2"></i>Save Changes
+                            </button>
+                            <a href="{{ url_for('organizer_my_events') }}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

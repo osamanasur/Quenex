@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}Help & Support - Quenex{% endblock %}
+
+{% block content %}
+<div class="container mt-5 pt-5">
+    <div class="row mb-5">
+        <div class="col-12 text-center">
+            <h1 class="display-4 fw-bold">Help & Support</h1>
+            <p class="lead text-muted">How can we assist you today?</p>
+            <div class="title-underline mx-auto"></div>
+        </div>
+    </div>
+
+    <!-- Support Options -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-3">
+            <div class="support-card text-center p-4">
+                <i class="fas fa-phone-alt fa-3x text-primary mb-3"></i>
+                <h5>Call Us</h5>
+                <p>+256(0)769-271812</p>
+                <small class="text-muted">Mon-Fri, 8AM-8PM</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="support-card text-center p-4">
+                <i class="fab fa-whatsapp fa-3x text-success mb-3"></i>
+                <h5>WhatsApp</h5>
+                <p>+256(0)769-271812</p>
+                <a href="https://wa.me/256769271812" target="_blank" class="btn btn-sm btn-success mt-2">Chat Now</a>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="support-card text-center p-4">
+                <i class="fas fa-envelope fa-3x text-primary mb-3"></i>
+                <h5>Email</h5>
+                <p>quenex256@gmail.com</p>
+                <button class="btn btn-sm btn-outline-primary mt-2" onclick="copyToClipboard('quenex256@gmail.com', 'copyHelpEmail')">Copy Email</button>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="support-card text-center p-4">
+                <i class="fab fa-twitter fa-3x text-info mb-3"></i>
+                <h5>X (Twitter)</h5>
+                <p>@quenex256</p>
+                <a href="https://twitter.com/quenex256" target="_blank" class="btn btn-sm btn-outline-info mt-2">Follow</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Support Ticket -->
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card shadow border-0">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-ticket-alt me-2"></i>Create a Support Ticket</h5>
+                </div>
+                <div class="card-body p-4">
+                    {% if current_user.is_authenticated %}
+                        <form method="POST" action="{{ url_for('support_ticket') }}">
+                            <div class="mb-3">
+                                <label class="form-label">Subject *</label>
+                                <input type="text" class="form-control" name="subject" required placeholder="Brief description of your issue">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Message *</label>
+                                <textarea class="form-control" name="message" rows="5" required placeholder="Please provide details about your issue..."></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary-custom w-100">
+                                <i class="fas fa-paper-plane me-2"></i>Submit Ticket
+                            </button>
+                        </form>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-lock fa-3x text-muted mb-3"></i>
+                            <p>Please <a href="{{ url_for('login') }}">login</a> to create a support ticket.</p>
+                            <p class="text-muted small">Don't have an account? <a href="{{ url_for('register') }}">Register here</a></p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick FAQ -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <h3 class="text-center mb-4">Quick Answers</h3>
+        </div>
+        <div class="col-md-4">
+            <div class="quick-faq p-3">
+                <h6><i class="fas fa-ticket-alt text-primary me-2"></i>How to buy tickets?</h6>
+                <p class="small text-muted">Browse events → Select ticket type → Pay with Mobile Money → Receive QR code</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="quick-faq p-3">
+                <h6><i class="fas fa-chalkboard-user text-primary me-2"></i>How to become an organizer?</h6>
+                <p class="small text-muted">Register → Select "Organizer" role → Create events → Pay posting fee</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="quick-faq p-3">
+                <h6><i class="fas fa-qrcode text-primary me-2"></i>How to use QR tickets?</h6>
+                <p class="small text-muted">Download/Print QR code → Present at venue → Get scanned for entry</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.title-underline {
+    width: 60px;
+    height: 3px;
+    background: #F39C12;
+    margin: 10px auto 0;
+    border-radius: 2px;
+}
+.support-card {
+    background: white;
+    border-radius: 15px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    border: 1px solid #e9ecef;
+}
+.support-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(243, 156, 18, 0.1);
+    border-color: #F39C12;
+}
+.quick-faq {
+    background: #f8f9fa;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+.quick-faq:hover {
+    background: #FDEBD0;
+}
+</style>
+
+<script>
+function copyToClipboard(text, btnId) {
+    navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById(btnId);
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+        setTimeout(() => {
+            btn.innerHTML = originalText;
+        }, 2000);
+    });
+}
+</script>
+{% endblock %}

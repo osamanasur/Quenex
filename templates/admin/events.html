@@ -1,0 +1,111 @@
+e{% extends "base.html" %}
+
+{% block title %}Manage Events - Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-5 pt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="display-5 fw-bold">
+                    <i class="fas fa-calendar-alt text-primary me-2"></i>Manage Events
+                </h1>
+                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow border-0">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-list me-2"></i>All Events</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover" id="eventsTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Event</th>
+                            <th>Organizer</th>
+                            <th>Category</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Payment</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for event in events %}
+                        <tr>
+                            <td>{{ event.id }}</td>
+                            <td>
+                                <strong>{{ event.title }}</strong><br>
+                                <small class="text-muted">{{ event.venue[:30] }}</small>
+                            </td>
+                            <td>{{ event.organizer.username }}</td>
+                            <td>{{ categories[event.category].name }}</td>
+                            <td>{{ event.date.strftime('%Y-%m-%d') }}</td>
+                            <td>
+                                {% if event.status == 'approved' %}
+                                    <span class="badge bg-success">Approved</span>
+                                {% elif event.status == 'pending' %}
+                                    <span class="badge bg-warning">Pending</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Rejected</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if event.is_paid %}
+                                    <span class="badge bg-success">Paid</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Unpaid</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    {% if event.status == 'pending' %}
+                                        <a href="{{ url_for('admin_approve_event', event_id=event.id) }}" class="btn btn-success" onclick="return confirm('Approve this event?')">
+                                            <i class="fas fa-check"></i>
+                                        </a>
+                                        <a href="{{ url_for('admin_reject_event', event_id=event.id) }}" class="btn btn-danger" onclick="return confirm('Reject this event?')">
+                                            <i class="fas fa-times"></i>
+                                        </a>
+                                    {% endif %}
+                                    {% if not event.is_paid and event.status == 'pending' %}
+                                        <a href="{{ url_for('admin_force_publish', event_id=event.id) }}" class="btn btn-warning" onclick="return confirm('Force publish this event?')">
+                                            <i class="fas fa-bolt"></i>
+                                        </a>
+                                    {% endif %}
+                                    <a href="{{ url_for('admin_delete_event', event_id=event.id) }}" class="btn btn-danger" onclick="return confirm('Permanently delete this event? This action cannot be undone!')">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                    <a href="{{ url_for('event_detail', event_id=event.id) }}" class="btn btn-info" target="_blank">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    $('#eventsTable').DataTable({
+        pageLength: 25,
+        order: [[4, 'desc']],
+        language: {
+            search: "Search events:",
+            lengthMenu: "Show _MENU_ events per page",
+            info: "Showing _START_ to _END_ of _TOTAL_ events"
+        }
+    });
+});
+</script>
+{% endblock %}
